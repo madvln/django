@@ -1,8 +1,8 @@
-# Selfedu 
+# Django 
   
 ## Описание 
   
-Проект selfedu создан в процессе обучения по видео из канала [selfedu](https://youtu.be/oBU83uojltE?si=c8E9WdSOK2VPuSnN) 
+Проект django создан в процессе обучения по видео из канала [selfedu](https://youtu.be/oBU83uojltE?si=c8E9WdSOK2VPuSnN) 
   
 ## Установка 
   
@@ -10,7 +10,7 @@
   
     ```bash 
     git clone https://github.com/madvln/django.git 
-    cd selfedu 
+    cd django 
     ```
   
 2. **Создайте и активируйте виртуальное окружение:** 
