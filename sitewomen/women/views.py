@@ -19,9 +19,9 @@ data_db = [
         "title": "Актриса 1",
         "content": """<h1>zz</h1> zzz zz zzz z zzzz zzzzz zzz zzz zz zzz zz zz zz z
         zzzzz zzzzz zzz zzz zz zz zz zz zzz zzzzz
-        zzzzz zzzzz zzz zzz zz zz zz zz zzz zzzzz
-        zzzzz zzzzz zzz zzz zz zz zz zz zzz zzzzz 
         zz zzz zzzz zzzz zzzzz zzz zzzz zzzz z zzz zzz zzz zz zz zzzz zzzzz zzz
+        zzzzz zzzzz zzz zzz zz zz zz zz zzz zzzzz 
+        zzzzz zzzzz zzz zzz zz zz zz zz zzz zzzzz
         zzzzzzzzzzz""",
         "is_published": True,
     },
@@ -62,6 +62,7 @@ def about(request):
 
 
 def show_post(request, post_id):
+
     return HttpResponse(f"Showing post with id = {post_id}")
 
 
