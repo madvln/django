@@ -1,10 +1,10 @@
 from django.http import HttpResponse, HttpResponseNotFound
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 
 # from django.template.loader import render_to_string
 
-from .models import *
+from .models import Women
 
 menu = [
     {"title": "О сайте", "url_name": "about"},
@@ -61,9 +61,18 @@ def about(request):
     return render(request, "women/about.html", {"title": "О сайте", "menu": menu})
 
 
-def show_post(request, post_id):
+def show_post(request, post_slug):
+    post = get_object_or_404(Women, slug=post_slug)
 
-    return HttpResponse(f"Showing post with id = {post_id}")
+    data = {
+        'title': post.title,
+        'menu': menu,
+        'post': post,
+        'cat_selected': 1,
+    }
+
+    return render(request, 'women/post.html', data)
+    # return HttpResponse(f"Showing post with id = {post_id}")
 
 
 def add_page(request):
