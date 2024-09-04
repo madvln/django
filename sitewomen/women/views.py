@@ -45,12 +45,14 @@ def add_page(request):
     if request.method == "POST":
         form = AddPostForm(request.POST)
         if form.is_valid():
-            # print(form.cleaned_data)
-            try:
-                Women.objects.create(**form.cleaned_data)
-                return redirect("home")
-            except:
-                form.add_error(None, "Ошибка добавления поста")
+#             print(form.cleaned_data)
+#             try:
+#                 Women.objects.create(**form.cleaned_data)
+#                 return redirect("home")
+#             except:
+#                 form.add_error(None, "Ошибка добавления поста")            
+            form.save()
+            return redirect("home")
     else:
         form = AddPostForm()
 
@@ -59,7 +61,7 @@ def add_page(request):
         "title": "Добавление статьи",
         "form": form,
     }
-    return render(request, "women/addpage.html", data)
+    return render(request, "women/addpage.html", data)    
 
 
 def contact(request):
