@@ -1,7 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.template.defaultfilters import slugify
-
+from django.core.validators import MinLengthValidator, MaxLengthValidator
 
 def translit_to_eng(s: str) -> str:
     d = {
@@ -120,7 +120,15 @@ class Category(models.Model):
 
 class TagPost(models.Model):
     tag = models.CharField(max_length=100, db_index=True)
-    slug = models.SlugField(max_length=255, unique=True, db_index=True)
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        db_index=True,
+        validators=[
+            MinLengthValidator(5, message="Минимум 5 символов"),
+            MaxLengthValidator(100, message="Максимум 100 символов"),
+        ],
+    )
 
     def __str__(self):
         return self.tag

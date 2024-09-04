@@ -2,6 +2,7 @@ from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 
+from .forms import AddPostForm
 from .models import Women, Category, TagPost
 
 menu = [
@@ -41,8 +42,24 @@ def show_post(request, post_slug):
 
 
 def add_page(request):
-    return render(request, "women/addpage.html", {"menu": menu, 
-    "title": "Добавление статьи"})
+    if request.method == "POST":
+        form = AddPostForm(request.POST)
+        if form.is_valid():
+            # print(form.cleaned_data)
+            try:
+                Women.objects.create(**form.cleaned_data)
+                return redirect("home")
+            except:
+                form.add_error(None, "Ошибка добавления поста")
+    else:
+        form = AddPostForm()
+
+    data = {
+        "menu": menu,
+        "title": "Добавление статьи",
+        "form": form,
+    }
+    return render(request, "women/addpage.html", data)
 
 
 def contact(request):
@@ -71,8 +88,7 @@ def page_not_found(request, exception):
 
 def show_tags_postlist(request, tag_slug):
     tag = get_object_or_404(TagPost, slug=tag_slug)
-    posts = tag.tags.filter(is_published=Women.Status.PUBLISHED)\
-        .select_related("cat")
+    posts = tag.tags.filter(is_published=Women.Status.PUBLISHED).select_related("cat")
     data = {
         "title": f"Тег: {tag.tag}",
         "menu": menu,
