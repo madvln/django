@@ -1,3 +1,10 @@
 {% extends "base.html" %} {% block content %}
 <h1>{{ title }}</h1>
+<!--Загружаем файл на сервер-->
+<form action="" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    {% comment %} <p><input type="file" name="file_upload"></p> {% endcomment %}
+    <p><button type="submit">Отправить</p>
+</form>
 {% endblock content %}

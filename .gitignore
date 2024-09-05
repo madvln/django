@@ -7,3 +7,4 @@ static/
 migrations/
 static/
 *.back
+uploads
