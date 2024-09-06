@@ -7,4 +7,4 @@ static/
 migrations/
 static/
 *.back
-uploads
+media
