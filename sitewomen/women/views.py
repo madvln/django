@@ -56,7 +56,7 @@ class ShowPost(DataMixin, DetailView):
 class AddPage(DataMixin, CreateView):
     form_class = AddPostForm
     template_name = "women/addpage.html"
-    title_page = ("Добавление статьи",)
+    title_page = "Добавление статьи"
 
 
 class UpdatePage(DataMixin, UpdateView):
