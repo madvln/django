@@ -13,7 +13,7 @@ from django.views.generic import (
 )
 from django.core.paginator import Paginator
 
-from .forms import AddPostForm, UploadFileForm
+from .forms import AddPostForm
 from .models import Women, Category, TagPost, UploadFiles
 from .utils import DataMixin
 
