@@ -1,8 +1,14 @@
 {% extends 'base.html' %} {% block content %}
 <h1>Профиль</h1>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
   {% csrf_token %}
+  {% if user.photo %}
+  <p><img src="{{ user.photo.url }}">
+  {% else %}
+  <p><img src="/media/users/default.png">
+  {% endif %}
+  
   <div class="form-error">{{ form.non_fields_errors }}</div>
   {% for f in form %}
   <p>

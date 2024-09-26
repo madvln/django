@@ -1,9 +1,15 @@
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.http import HttpResponse, HttpResponseRedirect
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, get_user_model
-from django.contrib.auth.views import LoginView, PasswordChangeView
+from django.contrib.auth.views import (
+    LoginView,
+    PasswordChangeView,
+    PasswordResetView,
+    PasswordResetDoneView,
+)
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView, UpdateView
 
 from .forms import (
@@ -12,6 +18,7 @@ from .forms import (
     ProfileUserForm,
     UserPasswordChangeForm,
 )
+from .models import User
 
 
 class LoginUser(LoginView):
@@ -47,6 +54,19 @@ class UserPasswordChange(PasswordChangeView):
     form_class = UserPasswordChangeForm
     success_url = reverse_lazy("users:password_change_done")
     template_name = "users/password_change_form.html"
+
+
+class CustomPasswordResetView(PasswordResetView):
+    template_name = "users/password_reset_form.html"
+    email_template_name = "users/password_reset_email.html"
+    success_url = reverse_lazy("users:password_reset_done")
+
+    def form_valid(self, form):
+        email = form.cleaned_data.get("email")
+        if not User.objects.filter(email=email).exists():
+            messages.error(self.request, "Пользователь с таким email не найден.")
+            return self.form_invalid(form)
+        return super().form_valid(form)
 
 
 # def register(request):
