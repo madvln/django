@@ -15,9 +15,17 @@ from django.views.generic import (
 )
 from django.core.paginator import Paginator
 
+from rest_framework import generics
+
 from .forms import AddPostForm
 from .models import Women, Category, TagPost, UploadFiles
 from .utils import DataMixin
+from .serializers import WomenSerializer
+
+
+class WomenAPIView(generics.ListAPIView):
+    queryset = Women.objects.all()
+    serializer_class = WomenSerializer
 
 
 class WomenHome(DataMixin, ListView):
@@ -85,6 +93,7 @@ class DeletePage(DataMixin, DeleteView):
     template_name = "women/delete_confirm.html"
     success_url = reverse_lazy("home")
     title_page = "Удаление статьи"
+
 
 @permission_required(perm="women.view_women", raise_exception=True)
 def contact(request):

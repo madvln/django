@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
-from women.views import page_not_found
+from women.views import page_not_found, WomenAPIView
 from sitewomen import settings
 
 urlpatterns = [
@@ -9,6 +9,7 @@ urlpatterns = [
     path("", include("women.urls")),
     path("users/", include("users.urls", namespace="users")),
     path("__debug__/", include("debug_toolbar.urls")),
+    path("api/v1/womenlist/", WomenAPIView.as_view()),
 ]
 
 if settings.DEBUG:
