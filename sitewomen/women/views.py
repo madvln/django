@@ -24,6 +24,29 @@ from .serializers import WomenSerializer
 
 
 class WomenAPIView(generics.ListAPIView):
+    """
+    Класс, представляющий API для получения списка женщин.
+
+    Этот класс наследует функционал от класса ListAPIView, что позволяет 
+    выводить список объектов из модели Women
+    Используется для реализации GET-запросов, возвращающих список всех объектов
+    модели.
+
+    Атрибуты
+    --------
+    queryset : QuerySet
+        Набор данных, содержащий все объекты модели Women
+    serializer_class : Serializer
+        Сериализатор, который отвечает за преобразование объектов модели в
+        формат JSON
+
+    Методы
+    ------
+    get(request, *args, **kwargs)
+        Метод для обработки GET-запросов и возврата списка женщин. Данный метод
+        унаследован от класса ListAPIView
+    """
+
     queryset = Women.objects.all()
     serializer_class = WomenSerializer
 
