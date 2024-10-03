@@ -144,4 +144,4 @@ Django REST Framework (DRF) — это мощный и гибкий инстру
    ]
    ```
 
-### Детальный разбор работы представлений (lesson-3 drf):
+### [Детальный разбор работы представлений](https://rutube.ru/video/66b47f4203b73f33fcf038709954567d/?playlist=536685&playlistPage=1)

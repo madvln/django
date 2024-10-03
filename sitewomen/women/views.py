@@ -16,6 +16,8 @@ from django.views.generic import (
 from django.core.paginator import Paginator
 
 from rest_framework import generics
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .forms import AddPostForm
 from .models import Women, Category, TagPost, UploadFiles
@@ -23,14 +25,40 @@ from .utils import DataMixin
 from .serializers import WomenSerializer
 
 
-class WomenAPIView(generics.ListAPIView):
-    """
-    Класс, представляющий API для получения списка женщин.
+# class WomenAPIView(generics.ListAPIView):
+#     """
+#     Класс, представляющий API для получения списка женщин.
 
-    Этот класс наследует функционал от класса ListAPIView, что позволяет 
-    выводить список объектов из модели Women
-    Используется для реализации GET-запросов, возвращающих список всех объектов
-    модели.
+#     Этот класс наследует функционал от класса ListAPIView, что позволяет
+#     выводить список объектов из модели Women
+#     Используется для реализации GET-запросов, возвращающих список всех объектов
+#     модели.
+
+#     Атрибуты
+#     --------
+#     queryset : QuerySet
+#         Набор данных, содержащий все объекты модели Women
+#     serializer_class : Serializer
+#         Сериализатор, который отвечает за преобразование объектов модели в
+#         формат JSON
+
+#     Методы
+#     ------
+#     get(request, *args, **kwargs)
+#         Метод для обработки GET-запросов и возврата списка женщин. Данный метод
+#         унаследован от класса ListAPIView
+#     """
+
+#     queryset = Women.objects.all()
+#     serializer_class = WomenSerializer
+
+
+class WomenAPIView(APIView):
+    """
+    Класс, представляющий API
+
+    Этот класс наследует функционал от класса APIView. Этот класс стоит во
+    главе иерархии класов представления, представленных в rest_framework.generics
 
     Атрибуты
     --------
@@ -42,13 +70,13 @@ class WomenAPIView(generics.ListAPIView):
 
     Методы
     ------
-    get(request, *args, **kwargs)
-        Метод для обработки GET-запросов и возврата списка женщин. Данный метод
-        унаследован от класса ListAPIView
+    get(self, request)
+        Метод для обработки GET-запросов. Возвращает фиксированные данные в виде
+        JSON строки.
     """
 
-    queryset = Women.objects.all()
-    serializer_class = WomenSerializer
+    def get(self, request):
+        return Response({"title": "Angelina Jolie"})
 
 
 class WomenHome(DataMixin, ListView):
