@@ -75,7 +75,7 @@ Django REST Framework (DRF) — это мощный и гибкий инстру
    
    ![Пример работы REST API][alt text]
 
-   [alt text]: https://berkeley-gif.github.io/caladapt-docs/_images/restapi_model.png "Пример работы REST API"  
+   [alt text]: https://github.com/user-attachments/assets/2839adff-518f-4936-b371-caf4235d0587 "Пример работы REST API"  
 
    <div align = "center">
    </center><b>Пример работы REST API</b></center>
