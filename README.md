@@ -62,7 +62,11 @@ python3 manage.py startapp users
 
 В проекте используется Django REST Framework для создания REST API. С помощью этого фреймворка можно взаимодействовать с данными в формате JSON.
 
-### Знакомство с Django REST Framework:
+### Что такое Django REST Framework (lesson-1 drf):
+
+
+
+### Тестовый пример для API (lesson-2 drf):
 
 1. **Сериализаторы**
    Классы сериализаторов используются для преобразования объектов моделей в JSON и обратно. В нашем проекте используется `WomenSerializer`, который сериализует поля `title` и `cat_id` модели `Women`.
@@ -104,3 +108,5 @@ python3 manage.py startapp users
       path("api/v1/womenlist/", WomenAPIView.as_view()),
    ]
    ```
+
+### Детальный разбор работы представлений (lesson-3 drf):
