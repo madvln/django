@@ -13,6 +13,7 @@ from django.views.generic import (
     UpdateView,
     DeleteView,
 )
+from django.forms import model_to_dict
 from django.core.paginator import Paginator
 
 from rest_framework import generics
@@ -25,7 +26,7 @@ from .utils import DataMixin
 from .serializers import WomenSerializer
 
 
-# class WomenAPIView(generics.ListAPIView):
+# class WomenAPIView_old(generics.ListAPIView):
 #     """
 #     Класс, представляющий API для получения списка женщин.
 
@@ -55,28 +56,52 @@ from .serializers import WomenSerializer
 
 class WomenAPIView(APIView):
     """
-    Класс, представляющий API
+    Этот API возвращает данные о женщинах в ответ на GET и POST-запросы.
 
-    Этот класс наследует функционал от класса APIView. Этот класс стоит во
-    главе иерархии класов представления, представленных в rest_framework.generics
-
-    Атрибуты
-    --------
-    queryset : QuerySet
-        Набор данных, содержащий все объекты модели Women
-    serializer_class : Serializer
-        Сериализатор, который отвечает за преобразование объектов модели в
-        формат JSON
+    Класс наследует функционал от класса APIView, представляя базовые методы для 
+    обработки HTTP-запросов (GET, POST и другие). Он позволяет реализовать логику
+    для взаимодействия с моделью Women. 
 
     Методы
     ------
     get(self, request)
-        Метод для обработки GET-запросов. Возвращает фиксированные данные в виде
-        JSON строки.
+        Метод для обработки GET-запросов. Возвращает список записей из таблицы 
+        women_women.
+
+        Атрибуты метода get
+        -------------------
+        lst : ValuesQuerySet
+            Переменная, представляющая собой QuerySet, где каждая запись является
+            словарём (dict), содержащим пары "поле-значение" для каждой строки 
+            модели Women.
+    
+    post(self, request)
+        Метод для обработки POST-запросов. Позволяет добавлять новые записи в 
+        таблицу women_women, используя данные в теле запроса. Возвращает данные 
+        записи в формате JSON.
+
+        Атрибуты метода post
+        --------------------
+        post_new : Women
+            Экземпляр модели Women. Конкретнее, который создается и сохраняется 
+            в базе данных с помощью метода create().
     """
 
     def get(self, request):
-        return Response({"title": "Angelina Jolie"})
+        lst = Women.objects.all().values()
+        return Response({"posts": list(lst)})
+    
+    def post(self, request):
+        # Проверяем, передан ли файл для поля photo
+        photo = request.data.get("photo", None)
+        post_new = Women.objects.create(
+            title=request.data["title"],
+            content=request.data['content'],
+            cat_id=request.data["cat_id"],
+            photo=photo if photo else None
+        )
+
+        return Response({"post": model_to_dict(post_new)})
 
 
 class WomenHome(DataMixin, ListView):

@@ -103,8 +103,8 @@ Django REST Framework (DRF) — это мощный и гибкий инстру
 
 ### [Тестовый пример для API](https://rutube.ru/video/983339116167f2a0f65ba0533523d50d/?playlist=536685&playlistPage=1)
 
-1. **Сериализаторы**
-   Классы сериализаторов используются для преобразования объектов моделей в JSON и обратно. В нашем проекте используется `WomenSerializer`, который сериализует поля `title` и `cat_id` модели `Women`.
+1. **Сериализаторы**  
+Классы сериализаторов используются для преобразования объектов моделей в JSON и обратно. В нашем проекте используется `WomenSerializer`, который сериализует поля `title` и `cat_id` модели `Women`.
 
    ```python
    from rest_framework import serializers
@@ -118,7 +118,7 @@ Django REST Framework (DRF) — это мощный и гибкий инстру
          fields = ("title", "cat_id")
    ```
 
-2. **APIView**
+2. **APIView**  
    Для обработки запросов на API используется класс WomenAPIView, который наследуется в свою очередь свой функционал от класса ListAPIView. Этот класс автоматически обрабатывает GET-запросы и возвращает список объектов модели Women в формате JSON.
 
    ```python
@@ -133,7 +133,7 @@ Django REST Framework (DRF) — это мощный и гибкий инстру
       serializer_class = WomenSerializer
    ```
 
-3. **Маршрутизация**
+3. **Маршрутизация**  
    В проекте добавлен маршрут для доступа к API:
 
    ```python
@@ -145,3 +145,156 @@ Django REST Framework (DRF) — это мощный и гибкий инстру
    ```
 
 ### [Детальный разбор работы представлений](https://rutube.ru/video/66b47f4203b73f33fcf038709954567d/?playlist=536685&playlistPage=1)
+
+Для начала рассмотрим работу класса представления ```WomenAPIView```, обходясь без сериализатора.
+
+#### Выполнение POST и GET-запросов с помощью Postman ####  
+   Postman - это инструмент для тестирования API, который позволяет легко отправлять запросы и получать ответы от вашего API. Ниже приведен пример того, как можно протестировать простое API с GET и POST-запросами, используя Postman.
+
+   Так выглядит простой класс представления, который возвращает данные в ответ на GET и POST-запросы:
+
+   ```python
+   from rest_framework.response import Response
+   from rest_framework.views import APIView
+
+   class WomenAPIView(APIView):
+
+      def get(self, request):
+         return Response({"title": "Angelina Jolie"})
+    
+      def post(self, request):
+         return Response({"title": "Jennifer Shrader Lawrence"})
+   ```
+#### Шаги для тестирования API, приведенного выше, с помощью Postman: ####  
+1. **Запуск сервера Django**  
+   Перед тем как тестировать API, убедитесь, что сервер Django запущен. Для этого выполните команду:
+
+   ```bash
+   python manage.py runserver
+   ```
+
+2. **Отправка GET-запроса**  
+
+   Откройте Postman и выберите метод GET.
+
+   Введите URL для вашего API, например:
+
+   `http://127.0.0.1:8000/api/v1/womenlist/`
+
+   Нажмите кнопку Send.
+
+   Ожидаемый результат: Вы получите JSON-ответ:
+   ```json
+   {
+   "title": "Angelina Jolie"
+   }
+   ```
+
+3. **Отправка POST-запроса**
+
+   В Postman выберите метод POST.
+
+   Введите тот же URL:
+
+   `http://127.0.0.1:8000/api/v1/womenlist/`
+
+   Нажмите кнопку Send.
+
+   Ожидаемый результат: Вы получите JSON-ответ:
+   ```json
+   {
+   "title": "Jennifer Shrader Lawrence"
+   }
+   ```
+
+#### Модернизация GET и POST-запросов ####
+   Видоизменим методы класса. Метод `get` теперь отправляет список всех записей из таблицы `women_women`. Метод `post` - 
+
+   ```python
+   from django.forms import model_to_dict
+
+   from rest_framework.response import Response
+   from rest_framework.views import APIView
+
+   from .models import Women
+
+   class WomenAPIView(APIView):
+
+      def get(self, request):
+         lst = Women.objects.all().values()
+         return Response({"posts": list(lst)})
+    
+      def post(self, request):
+         post_new = Women.objects.create(
+            title=request.data["title"],
+            content=request.data['content'],
+            cat_id=request.data["cat_id"]
+         )
+
+        return Response({"post": model_to_dict(post_new)})
+
+   ```
+1. **GET-запрос**  
+   Теперь, если выполнить GET-запрос, мы увидим список из соответствующих записей таблицы `women_women`. Важный момент, если бы было записано `lst = Women.objects.all()`, вышла бы ошибка, говорящая о отсутствии сериализации. приписка `.values()` возвращает конкретные значения.
+
+   Ожидаемый результат: вы получите JSON-ответ:
+   ```json
+   {
+      "posts": [
+         {
+            "id": 15,
+            "title": "Эллен Хог",
+            "slug": "ellen-hog",
+            "photo": "photos/2023/09/13/elen-hog.jpg",
+            "content": "Эллен Мартейн Хог (нидерл. Ellen Martijn Hoog; 26 марта 1986, Блумендал, Нидерланды) — бывшая нидерландская хоккеистка на траве, игрок национальной сборной Нидерландов.",
+            "time_create": "2023-09-13T08:19:08.042938Z",
+            "time_update": "2023-09-13T08:19:08.042938Z",
+            "is_published": true,
+            "cat_id": 1,
+            "husband_id": 1,
+            "author_id": null
+         },
+         ...
+         {
+            "id": 1,
+            ...
+         }
+      ]
+   }
+   ```
+2. **POST-запрос** 
+   Для правильного выполнения POST-запроса, перед нажатием **Send** выполните следующие шаги:
+* Перейдите на вкладку **Body**.
+* Выберете опцию **raw**. 
+* Справа от этой опции выберете тип данных как **JSON**.
+* Введите данные для отправки в виде JSON.
+Пример:
+```json
+{
+  "title": "Angelina Jolie",
+  "content": "Famous actress",
+  "cat_id": 1
+}
+```
+* Нажимаете кнопку **Send**.
+
+   Ожидаемый результат: вы получите JSON-ответ:
+   ```json
+   {
+      "post": {
+         "id": 16,
+         "title": "Angelina Jolie",
+         "content": "Famous actress",
+         "is_published": false,
+         "cat_id": 1
+      }
+   }
+   ```
+   Вместе с JSON-ответом в таблице `women_women` появится новая запись.
+   
+   ***Примечание***: в обновленном проекте данный POST-запрос выполнится с ошибкой и не вернет JSON-ответ, так как в теле отправляемых данных будет отсутсвовать путь к фотографии. Запись в таблице все же появится.
+#### Заключение по Postman ####
+
+   Postman позволяет легко тестировать API-запросы (GET, POST и другие методы) и получать быстрые ответы от вашего Django REST Framework приложения. Это удобный инструмент для отладки и проверки API без необходимости писать клиентские приложения.
+
+
