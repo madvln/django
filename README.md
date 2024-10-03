@@ -84,6 +84,14 @@ Django REST Framework (DRF) — это мощный и гибкий инстру
 2. **Сериализация данных**  
    Сериализация — это процесс преобразования данных из объектов модели в формат JSON, который может быть отправлен через API. DRF предоставляет удобные инструменты для автоматической сериализации данных с помощью классов `Serializer` или `ModelSerializer`.
 
+   ![Пример работы Django REST Framework][alt text 2]
+
+   [alt text 2]: https://github.com/user-attachments/assets/752767db-e5fd-4782-9984-9c00314a07fa "Пример работы Django REST Framework"  
+
+   <div align = "center">
+   </center><b>Пример работы Django REST Framework</b></center>
+   </div>
+   <br>
 3. **Удобная работа с запросами**  
    Django REST Framework предоставляет классы для обработки различных HTTP-запросов (GET, POST, PUT, DELETE). Эти классы, такие как `APIView` или `ViewSet`, облегчают создание логики взаимодействия с данными через API.
 
