@@ -1,11 +1,17 @@
+"""
+Функции и классы отображения в приложении Women
+"""
+
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+# from rest_framework import generics
+
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.http import HttpResponse, HttpResponseNotFound, Http404
-from django.shortcuts import redirect, render, get_object_or_404
-from django.utils.text import slugify
-from django.urls import reverse, reverse_lazy
-from django.conf import settings
-from django.views import View
+from django.http import HttpResponse, HttpResponseNotFound
+from django.shortcuts import render, get_object_or_404
+from django.urls import reverse_lazy
 from django.views.generic import (
     ListView,
     DetailView,
@@ -13,11 +19,117 @@ from django.views.generic import (
     UpdateView,
     DeleteView,
 )
+from django.forms import model_to_dict
 from django.core.paginator import Paginator
 
+# from django.http import Http404
+# from django.shortcuts import redirect
+# from django.utils.text import slugify
+# from django.urls import reverse
+# from django.conf import settings
+# from django.views import View
+
 from .forms import AddPostForm
-from .models import Women, Category, TagPost, UploadFiles
+from .models import Women, TagPost
 from .utils import DataMixin
+
+# from .models import Category, UploadFiles
+# from .serializers import WomenSerializer
+
+
+# class WomenAPIView(generics.ListAPIView): # legacy class from lesson-2 DRF
+#     """
+#     Класс, представляющий API для получения списка женщин.
+
+#     Этот класс наследует функционал от класса ListAPIView, что позволяет
+#     выводить список объектов из модели Women
+#     Используется для реализации GET-запросов, возвращающих список всех объектов
+#     модели.
+
+#     Атрибуты
+#     --------
+#     queryset : QuerySet
+#         Набор данных, содержащий все объекты модели Women
+#     serializer_class : Serializer
+#         Сериализатор, который отвечает за преобразование объектов модели в
+#         формат JSON
+
+#     Методы
+#     ------
+#     get(request, *args, **kwargs)
+#         Метод для обработки GET-запросов и возврата списка женщин. Данный метод
+#         унаследован от класса ListAPIView
+#     """
+
+#     queryset = Women.objects.all()
+#     serializer_class = WomenSerializer
+
+
+class WomenAPIView(APIView):
+    """
+    Этот API возвращает данные о женщинах в ответ на GET и POST-запросы.
+
+    Класс наследует функционал от класса APIView, представляя базовые методы для
+    обработки HTTP-запросов (GET, POST и другие). Он позволяет реализовать логику
+    для взаимодействия с моделью Women.
+
+    Методы
+    ------
+    get(self, request)
+        Метод для обработки GET-запросов. Возвращает список записей из таблицы
+        women_women.
+
+    post(self, request)
+        Метод для обработки POST-запросов. Позволяет добавлять новые записи в
+        таблицу women_women, используя данные в теле запроса. Возвращает данные
+        записи в формате JSON.
+    """
+
+    def get(self, request):
+        """
+        Метод для обработки GET-запросов. Возвращает фиксированные данные в виде
+        JSON строки.
+
+        Параметры
+        ---------
+        request : Request
+            HTTP-запрос, содержащий данные, необходимые для создания новой записи
+
+        Аттрибуты
+        ---------
+        lst : ValuesQuerySet
+            Переменная, представляющая собой QuerySet, где каждая запись является
+            словарём (dict), содержащим пары "поле-значение" для каждой строки
+            модели Women.
+        """
+        lst = Women.objects.all().values()
+        print(request)
+        return Response({"posts": list(lst)})
+
+    def post(self, request):
+        """
+        Метод для обработки POST-запросов. Позволяет добавлять новые записи в
+        таблицу women_women, используя данные в теле запроса. Возвращает данные
+        записи в формате JSON.
+
+        Параметры
+        ---------
+        request : Request
+            HTTP-запрос, содержащий данные, необходимые для создания новой записи
+
+        Атрибуты
+        --------
+        post_new : Women
+            Экземпляр модели Women. Конкретнее, который создается и сохраняется
+            в базе данных с помощью метода create().
+        """
+        post_new = Women.objects.create(
+            title=request.data["title"],
+            content=request.data["content"],
+            cat_id=request.data["cat_id"],
+        )
+        post_dict = model_to_dict(post_new, exclude=["photo"])
+        return Response({"post": post_dict})
 
 
 class WomenHome(DataMixin, ListView):
@@ -85,6 +197,7 @@ class DeletePage(DataMixin, DeleteView):
     template_name = "women/delete_confirm.html"
     success_url = reverse_lazy("home")
     title_page = "Удаление статьи"
+
 
 @permission_required(perm="women.view_women", raise_exception=True)
 def contact(request):
