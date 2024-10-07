@@ -1,6 +1,7 @@
 """
 Функции и классы отображения в приложении Women
 """
+
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -122,16 +123,13 @@ class WomenAPIView(APIView):
             Экземпляр модели Women. Конкретнее, который создается и сохраняется
             в базе данных с помощью метода create().
         """
-        # Проверяем, передан ли файл для поля photo
-        photo = request.data.get("photo", None)
         post_new = Women.objects.create(
             title=request.data["title"],
             content=request.data["content"],
             cat_id=request.data["cat_id"],
-            photo=photo if photo else None,
         )
-        print(request)
-        return Response({"post": model_to_dict(post_new)})
+        post_dict = model_to_dict(post_new, exclude=["photo"])
+        return Response({"post": post_dict})
 
 
 class WomenHome(DataMixin, ListView):
