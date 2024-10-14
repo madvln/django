@@ -34,102 +34,131 @@ from .models import Women, TagPost
 from .utils import DataMixin
 
 # from .models import Category, UploadFiles
-# from .serializers import WomenSerializer
+from .serializers import WomenSerializer
 
 
-# class WomenAPIView(generics.ListAPIView): # legacy class from lesson-2 DRF
-#     """
-#     Класс, представляющий API для получения списка женщин.
-
-#     Этот класс наследует функционал от класса ListAPIView, что позволяет
-#     выводить список объектов из модели Women
-#     Используется для реализации GET-запросов, возвращающих список всех объектов
-#     модели.
-
-#     Атрибуты
-#     --------
-#     queryset : QuerySet
-#         Набор данных, содержащий все объекты модели Women
-#     serializer_class : Serializer
-#         Сериализатор, который отвечает за преобразование объектов модели в
-#         формат JSON
-
-#     Методы
-#     ------
-#     get(request, *args, **kwargs)
-#         Метод для обработки GET-запросов и возврата списка женщин. Данный метод
-#         унаследован от класса ListAPIView
-#     """
-
+# legacy class from lesson-2 DRF
+# class WomenAPIView(generics.ListAPIView):
 #     queryset = Women.objects.all()
 #     serializer_class = WomenSerializer
 
+# legacy class from lesson-3 DRF
+# class WomenAPIView(APIView):
+#     """
+#     Этот API возвращает данные о женщинах в ответ на GET и POST-запросы.
+
+#     Класс наследует функционал от класса APIView, представляя базовые методы для
+#     обработки HTTP-запросов (GET, POST и другие). Он позволяет реализовать логику
+#     для взаимодействия с моделью Women.
+
+#     Методы
+#     ------
+#     get(self, request)
+#         Метод для обработки GET-запросов. Возвращает список записей из таблицы
+#         women_women.
+
+#     post(self, request)
+#         Метод для обработки POST-запросов. Позволяет добавлять новые записи в
+#         таблицу women_women, используя данные в теле запроса. Возвращает данные
+#         записи в формате JSON.
+#     """
+
+#     def get(self, request):
+#         """
+#         Метод для обработки GET-запросов. Возвращает фиксированные данные в виде
+#         JSON строки.
+
+#         Параметры
+#         ---------
+#         request : Request
+#             HTTP-запрос, содержащий данные, необходимые для создания новой записи
+
+#         Аттрибуты
+#         ---------
+#         lst : ValuesQuerySet
+#             Переменная, представляющая собой QuerySet, где каждая запись является
+#             словарём (dict), содержащим пары "поле-значение" для каждой строки
+#             модели Women.
+#         """
+#         lst = Women.objects.all().values()
+#         print(request)
+#         return Response({"posts": list(lst)})
+
+#     def post(self, request):
+#         """
+#         Метод для обработки POST-запросов. Позволяет добавлять новые записи в
+#         таблицу women_women, используя данные в теле запроса. Возвращает данные
+#         записи в формате JSON.
+
+#         Параметры
+#         ---------
+#         request : Request
+#             HTTP-запрос, содержащий данные, необходимые для создания новой записи
+
+#         Атрибуты
+#         --------
+#         post_new : Women
+#             Экземпляр модели Women. Конкретнее, который создается и сохраняется
+#             в базе данных с помощью метода create().
+#         """
+#         post_new = Women.objects.create(
+#             title=request.data["title"],
+#             content=request.data["content"],
+#             cat_id=request.data["cat_id"],
+#         )
+#         post_dict = model_to_dict(post_new, exclude=["photo"])
+#         return Response({"post": post_dict})
+
 
 class WomenAPIView(APIView):
-    """
-    Этот API возвращает данные о женщинах в ответ на GET и POST-запросы.
+    """Этот API возвращает данные о женщинах в ответ на GET и POST-запросы.
 
     Класс наследует функционал от класса APIView, представляя базовые методы для
     обработки HTTP-запросов (GET, POST и другие). Он позволяет реализовать логику
     для взаимодействия с моделью Women.
 
-    Методы
-    ------
-    get(self, request)
-        Метод для обработки GET-запросов. Возвращает список записей из таблицы
-        women_women.
-
-    post(self, request)
-        Метод для обработки POST-запросов. Позволяет добавлять новые записи в
-        таблицу women_women, используя данные в теле запроса. Возвращает данные
-        записи в формате JSON.
+    Methods:
+        - get: возвращает список женщин.
+        - post: добавляет новую запись о женщине.
     """
 
     def get(self, request):
-        """
-        Метод для обработки GET-запросов. Возвращает фиксированные данные в виде
+        """Метод для обработки GET-запросов. Возвращает фиксированные данные в виде
         JSON строки.
 
-        Параметры
-        ---------
-        request : Request
-            HTTP-запрос, содержащий данные, необходимые для создания новой записи
+        Args:
+            request (Request): HTTP-запрос, содержащий данные, необходимые для создания новой записи
 
-        Аттрибуты
-        ---------
-        lst : ValuesQuerySet
-            Переменная, представляющая собой QuerySet, где каждая запись является
-            словарём (dict), содержащим пары "поле-значение" для каждой строки
-            модели Women.
+        Returns:
+            Response: Ответ с данными записей модели Women в формате JSON.
         """
-        lst = Women.objects.all().values()
-        print(request)
-        return Response({"posts": list(lst)})
+        w = Women.objects.all()
+        return Response({"posts": WomenSerializer(w, many=True).data})
 
     def post(self, request):
-        """
-        Метод для обработки POST-запросов. Позволяет добавлять новые записи в
+        """Метод для обработки POST-запросов. Позволяет добавлять новые записи в
         таблицу women_women, используя данные в теле запроса. Возвращает данные
         записи в формате JSON.
 
-        Параметры
-        ---------
-        request : Request
-            HTTP-запрос, содержащий данные, необходимые для создания новой записи
+        В теле запроса должны содержаться поля: title, slug, content, cat_id.
+        Остальные поля - необязательны.
 
-        Атрибуты
-        --------
-        post_new : Women
-            Экземпляр модели Women. Конкретнее, который создается и сохраняется
-            в базе данных с помощью метода create().
+        Args:
+            request (Request): HTTP-запрос, содержащий данные, необходимые для
+            создания новой записи
+
+        Returns:
+            Response: Ответ с данными созданной записи в формате JSON.
         """
+        serializer = WomenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         post_new = Women.objects.create(
             title=request.data["title"],
+            slug=request.data["slug"],
             content=request.data["content"],
             cat_id=request.data["cat_id"],
         )
-        post_dict = model_to_dict(post_new, exclude=["photo"])
-        return Response({"post": post_dict})
+        return Response({"post": WomenSerializer(post_new).data})
 
 
 class WomenHome(DataMixin, ListView):

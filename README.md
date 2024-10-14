@@ -131,6 +131,28 @@ Django REST Framework (DRF) — это мощный и гибкий инстру
 
 
    class WomenAPIView(generics.ListAPIView):
+      """
+      Класс, представляющий API для получения списка женщин.
+
+      Этот класс наследует функционал от класса ListAPIView, что позволяет
+      выводить список объектов из модели Women
+      Используется для реализации GET-запросов, возвращающих список всех объектов
+      модели.
+
+      Атрибуты
+      --------
+      queryset : QuerySet
+         Набор данных, содержащий все объекты модели Women
+      serializer_class : Serializer
+         Сериализатор, который отвечает за преобразование объектов модели в
+         формат JSON
+
+      Методы
+      ------
+      get(request, *args, **kwargs)
+         Метод для обработки GET-запросов и возврата списка женщин. Данный метод
+         унаследован от класса ListAPIView
+      """
       queryset = Women.objects.all()
       serializer_class = WomenSerializer
    ```
@@ -227,7 +249,21 @@ from rest_framework.views import APIView
 from .models import Women
 
 class WomenAPIView(APIView):
+   """
+   Этот API возвращает данные о женщинах в ответ на GET и POST-запросы.
 
+   Класс наследует функционал от класса APIView, представляя базовые методы для
+    обработки HTTP-запросов (GET, POST и другие). Он позволяет реализовать логику
+    для взаимодействия с моделью Women.
+
+   Методы
+   ------
+   get(self, request)
+      Метод для обработки GET-запросов. Возвращает список записей из таблицы women_women.
+
+   post(self, request)
+      Метод для обработки POST-запросов. Позволяет добавлять новые записи в таблицу women_women, используя данные в теле запроса. Возвращает данные записи в формате JSON.
+   """
    def get(self, request):
       lst = Women.objects.all().values()
       return Response({"posts": list(lst)})
@@ -316,3 +352,195 @@ class WomenAPIView(APIView):
 #### Заключение по Postman
 
 Postman позволяет легко тестировать API-запросы (GET, POST и другие методы) и получать быстрые ответы от вашего Django REST Framework приложения. Это удобный инструмент для отладки и проверки API без необходимости писать клиентские приложения.
+
+### [Введение в сериализацию](https://rutube.ru/video/3049b97773ea79d5b9382b84bb1cde0f/?r=a)
+
+Еще раз повторим, что при реализации API сайта обмен данными реализовон посредством определенного формата: **`.json`** или `.xml`.
+
+Роль сериализатора - выполнять конвертирования произвольных объектов в формат `.json`, в том числе модели Django и queryset, и наоборот, и `json`-формата в соответствующие объекты языка Python.
+
+#### Создание сериалиатора
+
+В serializers.py создадим:
+1. **Класс, имитирующий модель Women:**
+   ```python
+   class WomenModel(): # Имитирование модели Women
+      def __init__(self, title, content):
+         self.title = title
+         self.content = content
+   ```
+2. **Класс сериализатора:**
+   ```python
+   from rest_framework import serializers 
+
+   class WomenSerializer(serializers.Serializer):
+      title = serializers.CharField(max_length=255)
+      content = serializers.CharField()
+   ```
+   Добавляем переменные в тело класса. Делается для того, чтобы сериализатор знал, что, например, `title` - представляет собой строку.
+3. **Функция encode**
+   Чтобы увидеть, как взаимодействуют классы WomenModel и WomenSerializer, объявим функцию encode. Она будет преобразовывать объкеты WomenModel в `json`-формат.
+   ```python
+   from rest_framework.renderers import JSONRenderer
+
+   def encode():
+      model = WomenModel("Name", "Name - content")
+      model_sr = WomenSerializer(model)
+      print(model_sr.data, type(model_sr.data), sep="\n")
+      json = JSONRenderer().render(model_sr.data)
+      print(json)
+   ```
+   В этой функции мы объект `model` пропускаем через сериализатор. Следующей строчкой мы передаем `model` в Meta класс класса WomenSerializer. Строкой, где мы присваиваем значение переменной `json`, преобразуется объект сериализации в байтовую `json`-строку.
+
+   Переходим в терминал
+
+   ```bash
+   >python3 manage.py shell
+   >>>from women.serializers import encode
+   >>>encode
+   {'title': 'Name', 'content': 'Name - content'}
+   <class 'rest_framework.utils.serializers_helpers.ReturnDict'>
+   b'{"title": "Name", "content": "Name - content"}'
+   ```
+   Возвращается первой строкой словарь, второй строкой тип данных переменной словаря `model_sr.data`. Третья строка - байтовая строка.
+
+4. **Функция decode()**
+   Осуществим обратное преобразование, преобразование байтовой строки в словарь:
+   ```python
+   import io
+   from rest_framework.parsers import JSONParser
+   
+   def decode():
+      stream = io.BytesIO(b'{"title": "Name", "content": "Name - content"}')
+      data = JSONParser().parse(stream)
+      serializer = WomenSerializer(data=data) # Используем именованный параметр data= для декодирования
+      serializer.is_valid() # Проверяем корректность
+      print(serializer.validated_data)
+   ```
+
+   Переходим в терминал
+
+   ```bash
+   >python3 manage.py shell
+   >>>from women.serializers import decode
+   >>>decode
+   OrderedDict([('title', 'Name'), ('content', 'Name - content')])
+   ```
+5. **Сериализатор с моделью Women**  
+   Применим сериализатор для нашей моедли `Women`. В классе сериализатора пропишем все атрибуты, что есть в нашей модели.
+
+   ```python
+   from rest_framework import serializers
+
+   from .models import Women
+
+   class WomenSerializer(serializers.ModelSerializer):
+      class Meta:
+         model = Women
+         fields = [
+            "title",
+            "slug",
+            "photo",
+            "content",
+            "time_create",
+            "time_update",
+            "is_published",
+            "cat",
+            "tags",
+            "husband",
+            "author",
+         ]
+   ```
+   Переходим в `views.py`:
+   ```python
+   from rest_framework.response import Response
+   from rest_framework.views import APIView
+
+   from .serializers import WomenSerializer
+
+   class WomenAPIView(APIView):
+
+      def get(self, request):
+         w = Women.objects.all()
+         return Response({"posts": WomenSerializer(w, many=True).data})
+
+      def post(self, request):
+         post_new = Women.objects.create(
+            title=request.data["title"],
+            content=request.data["content"],
+            cat_id=request.data["cat_id"],
+         )
+         post_dict = model_to_dict(post_new, exclude=["photo"])
+         return Response({"post": WomenSerializer(post_new).data})
+   ```
+   С методом post могут возникнуть трудности, так как при отсутствии одного из элементов в PostData (тело post запроса в postman), получим ошибку.
+   ##### Решение проблемы:
+   ```python
+      def post(self, request):
+         serializer = WomenSerializer(data=request.data)
+         serializer.is_valid(raise_exception=True)
+         post_new = Women.objects.create(
+            title=request.data["title"],
+            slug=request.data["slug"],
+            content=request.data["content"],
+            cat_id=request.data["cat_id"],
+         )
+         return Response({"post": WomenSerializer(post_new).data})
+   ```
+   Здесь мы первой строчкой создаем сериализатор на базе полученных данных с post-запроса, следующей строчкой проверяем корректность, причем в виде json-строки `(raise_exception=True)`. Но так как модель Women имеет больше четырех параметров, то для них элементов в классе `WomenSerializer` надо указать флаг `read_only=True`.
+   ```python
+   class WomenSerializer(serializers.ModelSerializer):
+      # Указываем поля, которые дожны быть доступны только для чтения
+      time_create = serializers.DateTimeField(read_only=True)
+      time_update = serializers.DateTimeField(read_only=True)
+      is_published = serializers.BooleanField(read_only=True)
+      photo = serializers.ImageField(read_only=True)
+      husband = serializers.PrimaryKeyRelatedField(read_only=True)
+      author = serializers.PrimaryKeyRelatedField(read_only=True)
+      # Решаем проблему с появлением ошибки ManyRelatedManager
+      tags = serializers.PrimaryKeyRelatedField(
+         queryset=TagPost.objects.all(), many=True, required=False
+      )
+      class Meta:
+         model = Women
+         fields = [
+            "title",
+            "slug",
+            "photo",
+            "content",
+            "time_create",
+            "time_update",
+            "is_published",
+            "cat_id",
+            "tags",
+            "husband",
+            "author",
+         ]
+   ```
+   Отправляем следующий POST-запрос:
+   ```json
+   {
+      "title": "Юлия Снегирь",
+      "slug": "yulia-snegir",
+      "content": "Юлия Снегирь - актриса",
+      "cat_id": 1
+   }
+   ```
+   Получим следующий ответ:
+   ```json
+   {
+      "post": {
+         "title": "Юлия Снегирь",
+         "slug": "yulia-snegir",
+         "photo": null,
+         "content": "Юлия Снегирь - актриса",
+         "time_create": "2024-10-14T15:30:56.004241+03:00",
+         "time_update": "2024-10-14T15:30:56.004465+03:00",
+         "is_published": false,
+         "cat_id": 1,
+         "tags": [],
+         "husband": null,
+         "author": null
+      }
+   }
+   ```
