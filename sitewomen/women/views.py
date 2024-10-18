@@ -21,6 +21,7 @@ from django.views.generic import (
 )
 from django.forms import model_to_dict
 from django.core.paginator import Paginator
+from django.db import connection
 
 # from django.http import Http404
 # from django.shortcuts import redirect
@@ -103,6 +104,20 @@ class WomenAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"post": serializer.data})
+
+    def delete(self, request, *args, **kwargs):
+        pk = kwargs.get("pk", None)
+        if not pk:
+            return Response({"error": "Method DELETE not allowed"})
+
+        try:
+            instance = Women.objects.get(pk=pk)
+        except:
+            return Response({"error": "Object does not exists"})
+
+        instance.delete()
+        drop_autoincrement()
+        return Response({"post": "delete post" + str(pk)})
 
 class WomenHome(DataMixin, ListView):
     template_name = "women/index.html"
@@ -218,3 +233,9 @@ class TagPostList(DataMixin, ListView):
         return Women.published.filter(
             tags__slug=self.kwargs["tag_slug"]
         ).select_related("cat")
+
+def drop_autoincrement():
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "UPDATE sqlite_sequence SET seq = 0 WHERE name = 'women_women';"
+        )

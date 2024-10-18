@@ -66,6 +66,8 @@ class WomenSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+    
+
 
 # lesson 4 drf legacy
 # class WomenSerializer(serializers.ModelSerializer):

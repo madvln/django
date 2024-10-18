@@ -560,9 +560,27 @@ Postman позволяет легко тестировать API-запросы 
       }
    }
    ```
-### [5. Методы save(), vreate() и update() класса Serializer](https://rutube.ru/video/92fd842cbb6fe655b971d4dc086610f8/?r=a)
+### [5. Методы save(), create() и update() класса Serializer](https://rutube.ru/video/92fd842cbb6fe655b971d4dc086610f8/?r=a)
 На прошлом занятии сделали сериализатор, который преобразовывает объекты в формат `json` и обратно. По идее, сериализаторы должны сохранять или изменять данные, а также удалять их. Сейчас этот функционал на себя берет ```class WomenAPIView(APIView):```. В этой главе мы поправим это недоразумение!
 
+#### Метод create() в сериализаторе(Serializer)
+
+Добавим в класс `class WomenSerializer(serializers.ModelSerializer)` метод `create()`. Он будет выполнять роль этого кода, который раньше был в `WomenAPIView(APIView)`:
+```python
+class WomenSerializer(serializers.ModelSerializer)
+...
+   def post(self, request):
+      serializer = WomenSerializer(data=request.data)
+      serializer.is_valid(raise_exception=True)
+      post_new = Women.objects.create(
+         title=request.data["title"],
+         slug=request.data["slug"],
+         content=request.data["content"],
+         cat_id=request.data["cat_id"],
+      )
+      return Response({'post': WomenSerializer(post_new).data})
+```
+Теперь, после того, как в `WomenSerializer` есть метод `create`:
 ```python
 class WomenSerializer(serializers.ModelSerializer):
    # Добавили title, content, cat_id для контроля их валидации и типов данных
@@ -585,6 +603,7 @@ class WomenSerializer(serializers.ModelSerializer):
    def create(self, validated_data):
       return Women.objects.create(**validated_data)
 ```
+Мы можем провести следующие изменения с классом `WomenAPIView`:
 ```python
 class WomenAPIView(APIView):
    ...# Тут должен быть get-запрос
@@ -595,6 +614,9 @@ class WomenAPIView(APIView):
       return Response({"post": serializer.data}) 
       # Ссылаемся на объект, созданный с помощью метода create
 ```
+Вызов `serializer.save()` автоматически вызывает метод `create()`, который в свою очередь добавляет новую запись.
+После вызова метода `save()` мы можем не создавать новый объект сериализатора, а использвать тот, что у нас есть. Коллекция serializer.data будет ссылаться на новый созданный объект, который возвращает метод `create()`.
+Что отправляется POST запросом:
 ```json
 {
 	"title": "Юлия Снегирь",
@@ -603,8 +625,7 @@ class WomenAPIView(APIView):
 	"cat_id": 1
 }
 ```
-
-
+На выходе получаем новую запись в БД и следующий ответ:
 ```json
 {
   "post": {
@@ -622,3 +643,73 @@ class WomenAPIView(APIView):
   }
 }
 ```
+#### Метод update()
+Расширим функционал нашего API и добавим метод, позволяющий изменять записи в БД. Переопредилим метод `update`.
+
+```python
+class WomenSerializer(serializers.ModelSerializer):
+   ... # Тут наш метакласс и метод create()
+   def update(self, instance, validated_data):
+      instance.title = validated_data.get("title", instance.title)
+      instance.slug = validated_data.get("slug", instance.slug)
+      instance.content = validated_data.get("content", instance.content)
+      instance.cat_id = validated_data.get("cat_id", instance.cat_id)
+      instance.time_update = validated_data.get("time_update", instance.time_update)
+      instance.is_published = validated_data.get("is_published", instance.is_published)
+      instance.save()
+      return instance
+```
+Где `instance` - ссылка на объект модели `Women`, а `validated_data` - словарь из проверенных данных, которые нужно изменить в базе данных.
+Используя ORM-Django, мы присваиваем объекту `instance` значения словаря `validated_data` (в случае неуспешного чтения данных из словаря, данные будут прочитаны из модели Women).
+В конце вызываем метод `save()` и возвращаем ссылку на объект модели.
+В классе отображения сделаем следующие изменения, добавим метод `def put()`:
+```python
+class WomenAPIView(APIView):
+   ... # Остальное
+   def put(self, request, *args, **kwargs):
+      pk = kwargs.get("pk", None)
+      if not pk:
+         return Response({"error": "Method PUT not allowed"})
+
+      try:
+         instance = Women.objects.get(pk=pk)
+      except:
+         return Response({"error": "Object does not exists"})
+
+      serializer = WomenSerializer(data=request.data, instance=instance)
+      serializer.is_valid(raise_exception=True)
+      serializer.save()
+      return Response({"post": serializer.data})
+```
+Методу `put` передается коллекция **kwargs, мы обращаемся к ней по ключу `pk`, если ключа нет в url запросе, то возвращается сообщение об ошибке `Method PUT not allowed`.
+Чтобы все работало, в `urls.py` мы должны добавить новый url адрес:
+```python
+urlpatterns = [
+   ...
+   path("api/v1/womenlist/<int:pk>/", WomenAPIView.as_view()),
+   # Маршрут для API изменения элемента в списке женщин (WomenAPIView)
+]
+```
+Когда мы прописываем адрес `http://localhost:8000/api/v1/womenlist/16/`, значение 16, передается в метод `put`, где уже мы по этому ключу обращаемся к объекту модели Women. после обращения к модели мы также.
+Также добавляем проверку, если в PUT-запросе присутствует ключ, который в БД отсутствует, то по исключению будет выводиться сообщение об ошибке `Object does not exists`. 
+Следующий шаг - создание оюъекта сериализатора (`serializer`), которому мы передаем изменяемые данные (`data=request.data`) и объект, который будем менять (`instance=instance`).
+Остальные действия аналогичны действиям в методе post.
+#### Метод delete()
+Для удаления записи отдельного метода в классе `WomenSerializer` для переопределения нет, поэтому имеет место провести удаления с помощью ORM-Django.
+```python
+class WomenAPIView(APIView):
+   ... # Остальное
+   def delete(self, request, *args, **kwargs):
+      pk = kwargs.get("pk", None)
+      if not pk:
+         return Response({"error": "Method DELETE not allowed"})
+
+      try:
+         instance = Women.objects.get(pk=pk)
+      except:
+         return Response({"error": "Object does not exists"})
+
+      instance.delete()
+      return Response({"post": "delete post" + str(pk)})
+```
+В целом, метод `def delete()` напоминает и повторяет `put`, только вместо объявления сериализатора мы с помощью ORM команды `delete()` удаляем объект из модели `Women`. Также выводим, объект с каким ключем был удален.
