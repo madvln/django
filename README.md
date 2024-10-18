@@ -395,9 +395,9 @@ Postman позволяет легко тестировать API-запросы 
    Переходим в терминал
 
    ```bash
-   >python3 manage.py shell
-   >>>from women.serializers import encode
-   >>>encode
+   (venv) root@localhost:~/source/django/sitewomen# python3 manage.py shell
+   >>> from women.serializers import encode
+   >>> encode
    {'title': 'Name', 'content': 'Name - content'}
    <class 'rest_framework.utils.serializers_helpers.ReturnDict'>
    b'{"title": "Name", "content": "Name - content"}'
@@ -421,9 +421,9 @@ Postman позволяет легко тестировать API-запросы 
    Переходим в терминал
 
    ```bash
-   >python3 manage.py shell
-   >>>from women.serializers import decode
-   >>>decode
+   (venv) root@localhost:~/source/django/sitewomen# python3 manage.py shell
+   >>> from women.serializers import decode
+   >>> decode
    OrderedDict([('title', 'Name'), ('content', 'Name - content')])
    ```
 5. **Сериализатор с моделью Women**  
