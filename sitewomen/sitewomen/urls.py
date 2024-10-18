@@ -21,6 +21,9 @@ urlpatterns = [
 
     path("api/v1/womenlist/", WomenAPIView.as_view()), 
     # Маршрут для API списка женщин (WomenAPIView)
+
+    path("api/v1/womenlist/<int:pk>/", WomenAPIView.as_view()),
+    # Маршрут для API изменения элемента в списке женщин (WomenAPIView)
 ]
 
 if settings.DEBUG:

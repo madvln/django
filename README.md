@@ -562,3 +562,63 @@ Postman позволяет легко тестировать API-запросы 
    ```
 ### [5. Методы save(), vreate() и update() класса Serializer](https://rutube.ru/video/92fd842cbb6fe655b971d4dc086610f8/?r=a)
 На прошлом занятии сделали сериализатор, который преобразовывает объекты в формат `json` и обратно. По идее, сериализаторы должны сохранять или изменять данные, а также удалять их. Сейчас этот функционал на себя берет ```class WomenAPIView(APIView):```. В этой главе мы поправим это недоразумение!
+
+```python
+class WomenSerializer(serializers.ModelSerializer):
+   # Добавили title, content, cat_id для контроля их валидации и типов данных
+   # Помогает избежать ошибок при post-запросе
+   title = serializers.CharField(max_length=255) 
+   content = serializers.CharField()
+   time_create = serializers.DateTimeField(read_only=True)
+   time_update = serializers.DateTimeField(read_only=True)
+   is_published = serializers.BooleanField(read_only=True)
+   cat_id = serializers.IntegerField()
+   photo = serializers.ImageField(read_only=True)
+   husband = serializers.PrimaryKeyRelatedField(read_only=True)
+   author = serializers.PrimaryKeyRelatedField(read_only=True)
+   tags = serializers.PrimaryKeyRelatedField(
+      queryset=TagPost.objects.all(), many=True, required=False
+   )
+   
+   ... # Тут должен быть метакласс
+
+   def create(self, validated_data):
+      return Women.objects.create(**validated_data)
+```
+```python
+class WomenAPIView(APIView):
+   ...# Тут должен быть get-запрос
+   def post(self, request):
+      serializer = WomenSerializer(data=request.data)
+      serializer.is_valid(raise_exception=True)
+      serializer.save() # Вызывает метод create класса WomenSerializer
+      return Response({"post": serializer.data}) 
+      # Ссылаемся на объект, созданный с помощью метода create
+```
+```json
+{
+	"title": "Юлия Снегирь",
+	"slug": "yulia-snegir",
+	"content": "Юлия Снегирь - актриса",
+	"cat_id": 1
+}
+```
+
+
+```json
+{
+  "post": {
+    "title": "Юлия Снегирь",
+    "slug": "yulia-snegir",
+    "photo": null,
+    "content": "Юлия Снегирь - актриса",
+    "time_create": "2024-10-18T10:29:03.426731+03:00",
+    "time_update": "2024-10-18T10:29:03.426911+03:00",
+    "is_published": false,
+    "cat_id": 1,
+    "tags": [],
+    "husband": null,
+    "author": null
+  }
+}
+```
