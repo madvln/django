@@ -37,79 +37,6 @@ from .utils import DataMixin
 from .serializers import WomenSerializer
 
 
-# legacy class from lesson-2 DRF
-# class WomenAPIView(generics.ListAPIView):
-#     queryset = Women.objects.all()
-#     serializer_class = WomenSerializer
-
-# legacy class from lesson-3 DRF
-# class WomenAPIView(APIView):
-#     """
-#     Этот API возвращает данные о женщинах в ответ на GET и POST-запросы.
-
-#     Класс наследует функционал от класса APIView, представляя базовые методы для
-#     обработки HTTP-запросов (GET, POST и другие). Он позволяет реализовать логику
-#     для взаимодействия с моделью Women.
-
-#     Методы
-#     ------
-#     get(self, request)
-#         Метод для обработки GET-запросов. Возвращает список записей из таблицы
-#         women_women.
-
-#     post(self, request)
-#         Метод для обработки POST-запросов. Позволяет добавлять новые записи в
-#         таблицу women_women, используя данные в теле запроса. Возвращает данные
-#         записи в формате JSON.
-#     """
-
-#     def get(self, request):
-#         """
-#         Метод для обработки GET-запросов. Возвращает фиксированные данные в виде
-#         JSON строки.
-
-#         Параметры
-#         ---------
-#         request : Request
-#             HTTP-запрос, содержащий данные, необходимые для создания новой записи
-
-#         Аттрибуты
-#         ---------
-#         lst : ValuesQuerySet
-#             Переменная, представляющая собой QuerySet, где каждая запись является
-#             словарём (dict), содержащим пары "поле-значение" для каждой строки
-#             модели Women.
-#         """
-#         lst = Women.objects.all().values()
-#         print(request)
-#         return Response({"posts": list(lst)})
-
-#     def post(self, request):
-#         """
-#         Метод для обработки POST-запросов. Позволяет добавлять новые записи в
-#         таблицу women_women, используя данные в теле запроса. Возвращает данные
-#         записи в формате JSON.
-
-#         Параметры
-#         ---------
-#         request : Request
-#             HTTP-запрос, содержащий данные, необходимые для создания новой записи
-
-#         Атрибуты
-#         --------
-#         post_new : Women
-#             Экземпляр модели Women. Конкретнее, который создается и сохраняется
-#             в базе данных с помощью метода create().
-#         """
-#         post_new = Women.objects.create(
-#             title=request.data["title"],
-#             content=request.data["content"],
-#             cat_id=request.data["cat_id"],
-#         )
-#         post_dict = model_to_dict(post_new, exclude=["photo"])
-#         return Response({"post": post_dict})
-
-
 class WomenAPIView(APIView):
     """Этот API возвращает данные о женщинах в ответ на GET и POST-запросы.
 
@@ -152,13 +79,14 @@ class WomenAPIView(APIView):
         """
         serializer = WomenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        post_new = Women.objects.create(
-            title=request.data["title"],
-            slug=request.data["slug"],
-            content=request.data["content"],
-            cat_id=request.data["cat_id"],
-        )
-        return Response({"post": WomenSerializer(post_new).data})
+        serializer.save()
+        # post_new = Women.objects.create(
+        #     title=request.data["title"],
+        #     slug=request.data["slug"],
+        #     content=request.data["content"],
+        #     cat_id=request.data["cat_id"],
+        # )
+        return Response({"post": serializer.data})
 
 
 class WomenHome(DataMixin, ListView):

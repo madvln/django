@@ -15,15 +15,19 @@ class WomenSerializer(serializers.ModelSerializer):
     Args:
         serializers (ModelSerializer): Базовый класс для сериализации моделей.
     """
+    title = serializers.CharField(max_length=255) 
+    content = serializers.CharField()
     time_create = serializers.DateTimeField(read_only=True)
     time_update = serializers.DateTimeField(read_only=True)
     is_published = serializers.BooleanField(read_only=True)
+    cat_id = serializers.IntegerField()
     photo = serializers.ImageField(read_only=True)
     husband = serializers.PrimaryKeyRelatedField(read_only=True)
     author = serializers.PrimaryKeyRelatedField(read_only=True)
     tags = serializers.PrimaryKeyRelatedField(
         queryset=TagPost.objects.all(), many=True, required=False
     )
+    
 
     class Meta:
         """
@@ -49,6 +53,51 @@ class WomenSerializer(serializers.ModelSerializer):
             "author",
         ]
 
+    def create(self, validated_data):
+        return Women.objects.create(**validated_data)
+
+# lesson 4 drf legacy
+# class WomenSerializer(serializers.ModelSerializer):
+#     """
+#     Сериализатор для модели Women, используемый для преобразования данных между
+#     экземплярами модели и JSON-форматом.
+
+#     Args:
+#         serializers (ModelSerializer): Базовый класс для сериализации моделей.
+#     """
+#     time_create = serializers.DateTimeField(read_only=True)
+#     time_update = serializers.DateTimeField(read_only=True)
+#     is_published = serializers.BooleanField(read_only=True)
+#     photo = serializers.ImageField(read_only=True)
+#     husband = serializers.PrimaryKeyRelatedField(read_only=True)
+#     author = serializers.PrimaryKeyRelatedField(read_only=True)
+#     tags = serializers.PrimaryKeyRelatedField(
+#         queryset=TagPost.objects.all(), many=True, required=False
+#     )
+
+#     class Meta:
+#         """
+#         Определяет метаданные для сериализатора WomenSerializer, включая
+#         связанную модель и поля, которые будут сериализованы.
+
+#         Attributes:
+#             model (Model): Модель, к которой относится данный сериализатор.
+#             fields (list): Список полей, которые будут сериализованы.
+#         """
+#         model = Women
+#         fields = [
+#             "title",
+#             "slug",
+#             "photo",
+#             "content",
+#             "time_create",
+#             "time_update",
+#             "is_published",
+#             "cat_id",
+#             "tags",
+#             "husband",
+#             "author",
+#         ]
 
 def encode():
     """
@@ -82,71 +131,3 @@ def decode():
     serializer = WomenSerializer(data=data)
     serializer.is_valid()
     print(serializer.validated_data)
-
-
-# legacy serializer from lesson-2 DRF
-# class WomenSerializer(serializers.ModelSerializer):
-#     """
-#     Класс сериализатора для модели Women
-
-#     Этот класс используется для преобразования объектов модели Women в формат
-#     JSON и обратно, что позволяет взаимодействовать с API и базой данных в
-#     удобном формате.
-
-#     Атрибуты
-#     --------
-#     Meta : class
-#         Внутренний класс, определяющий параметры сериализации.
-
-#         Атрибуты класса Meta
-#         --------------------
-#         model : Model
-#             Модель, с которой связан данный сериализатор
-#             (в данном случае Women).
-#         fields : tuple
-#             Поля модели, которые будут включены в сериализацию
-#             (title и cat_id).
-#     """
-
-#     class Meta:
-#         model = Women
-#         fields = ("title", "cat_id")
-
-# class WomenSerializer(serializers.Serializer):
-
-# legacy model from lesson-4 drf
-# class WomenModel:
-#     """_summary_
-
-#     Класс, объекты которого будут сериализованы (преобразованы в json-строку).
-#     Этот класс имитирует работу моделей Django, но является самостоятельным и
-#     не связан с базой данных.
-
-#     Методы
-#     ------
-#     __init__(self, title, content):
-#         Инициализатор, создающий объекты класса WomenModel.
-
-#     """
-
-#     def __init__(self, title, content):
-#         """Initializer, which is creating objects of WomenModel class.
-
-#         Args:
-#             title (str): Title of an object. Passed, when instance was created
-#             content (str): Additional information about object
-#         """
-#         self.title = title
-#         self.content = content
-
-
-# legacy serializer from lesson-4 DRF
-# class WomenSerializer(serializers.Serializer):
-#     """_summary_
-
-#     Args:
-#         serializers (_type_): _description_
-#     """
-
-#     title = serializers.CharField(max_length=255)
-#     content = serializers.CharField()
